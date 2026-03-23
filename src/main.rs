@@ -377,6 +377,33 @@ async fn main() -> anyhow::Result<()> {
         info!("Offramp processor worker disabled (OFFRAMP_PROCESSOR_ENABLED=false)");
     }
 
+    // Start Database Maintenance Worker
+    let maintenance_enabled = std::env::var("MAINTENANCE_WORKER_ENABLED")
+        .unwrap_or_else(|_| "true".to_string())
+        .to_lowercase()
+        != "false";
+    if maintenance_enabled {
+        if let Some(pool) = db_pool.clone() {
+            let config = workers::maintenance::MaintenanceConfig::from_env();
+            info!(
+                interval_secs = config.interval.as_secs(),
+                tx_retention_days = config.transaction_retention.as_secs() / 86_400,
+                "Starting database maintenance worker"
+            );
+            let worker = workers::maintenance::MaintenanceWorker::new(
+                pool,
+                redis_cache.clone(),
+                config,
+            );
+            tokio::spawn(worker.run(worker_shutdown_rx.clone()));
+            info!("✅ Database maintenance worker started");
+        } else {
+            info!("⏭️  Skipping maintenance worker (no database)");
+        }
+    } else {
+        info!("Database maintenance worker disabled (MAINTENANCE_WORKER_ENABLED=false)");
+    }
+
     // Initialize webhook processor and retry worker
     let webhook_routes = if let Some(pool) = db_pool.clone() {
         let webhook_repo = std::sync::Arc::new(
