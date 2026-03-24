@@ -874,6 +874,19 @@ async fn main() -> anyhow::Result<()> {
         info!("⏭️  Skipping fees routes (no database)");
         Router::new()
     };
+    // Setup auth routes
+    let auth_routes = if let Some(cache) = redis_cache.clone() {
+        let auth_state = api::auth::AuthState {
+            redis_cache: std::sync::Arc::new(cache),
+        };
+        Router::new()
+            .route("/api/auth/challenge", post(api::auth::generate_challenge))
+            .route("/api/auth/verify", post(api::auth::verify_signature))
+            .with_state(std::sync::Arc::new(auth_state))
+    } else {
+        info!("⏭️  Skipping auth routes (missing cache)");
+        Router::new()
+    };
     
     // ── Batch transaction routes (Issue #125) ────────────────────────────────
     let batch_routes = if let Some(pool) = db_pool.clone() {
@@ -950,6 +963,7 @@ async fn main() -> anyhow::Result<()> {
         .merge(rates_routes)
         .merge(fees_routes)
         .merge(webhook_routes)
+        .merge(auth_routes)
         .merge(batch_routes)
         .merge(admin_routes)
         .merge(openapi_routes)
