@@ -15,3 +15,6 @@ pub use flutterwave::FlutterwaveProvider;
 pub use mpesa::MpesaProvider;
 #[cfg(feature = "database")]
 pub use paystack::PaystackProvider;
+
+#[cfg(all(test, feature = "database"))]
+mod tests;
