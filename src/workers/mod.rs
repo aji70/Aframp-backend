@@ -1,4 +1,5 @@
 pub mod offramp_processor;
+pub mod stellar_confirmation_worker;
 pub mod transaction_monitor;
 pub mod webhook_retry;
 pub mod bill_processor {
