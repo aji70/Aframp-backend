@@ -538,6 +538,36 @@ pub mod database {
 }
 
 // ---------------------------------------------------------------------------
+// Security metrics
+// ---------------------------------------------------------------------------
+
+pub mod security {
+    use super::*;
+
+    static REQUEST_ANOMALY_FLAGS_TOTAL: OnceLock<CounterVec> = OnceLock::new();
+
+    pub fn request_anomaly_flags_total() -> &'static CounterVec {
+        REQUEST_ANOMALY_FLAGS_TOTAL
+            .get()
+            .expect("metrics not initialised")
+    }
+
+    pub(super) fn register(r: &Registry) {
+        REQUEST_ANOMALY_FLAGS_TOTAL
+            .set(
+                register_counter_vec_with_registry!(
+                    "aframp_request_anomaly_flags_total",
+                    "Total non-blocking request anomaly flags by consumer, endpoint, and field",
+                    &["consumer_id", "endpoint", "field"],
+                    r
+                )
+                .unwrap(),
+            )
+            .ok();
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Register all metrics
 // ---------------------------------------------------------------------------
 
@@ -549,6 +579,7 @@ fn register_all(r: &Registry) {
     worker::register(r);
     cache::register(r);
     database::register(r);
+    security::register(r);
 }
 
 // ---------------------------------------------------------------------------
