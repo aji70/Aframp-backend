@@ -93,6 +93,10 @@ pub mod metrics;
 #[cfg(feature = "cache")]
 pub mod ddos;
 
+// Microservice-to-microservice authentication
+#[cfg(feature = "database")]
+pub mod service_auth;
+
 // Contract error enum for Soroban (only when not using database feature)
 #[cfg(not(feature = "database"))]
 #[contracterror]

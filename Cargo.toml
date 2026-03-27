@@ -49,7 +49,7 @@ database = [
     "dep:argon2", 
     "dep:rand"
 ]
-database = [ "dep:tokio", "dep:async-trait", "dep:uuid", "dep:chrono", "dep:serde", "dep:serde_json", "dep:tracing", "dep:tracing-subscriber", "dep:axum", "dep:tower", "dep:tower-http", "dep:regex", "dep:http", "dep:sqlx", "dep:hmac", "dep:sha2", "dep:hex", "dep:bigdecimal", "dep:rust_decimal", "dep:stellar-strkey", "dep:ed25519-dalek", "dep:stellar-xdr", "dep:utoipa", "dep:utoipa-swagger-ui", "dep:argon2", "dep:rand", "dep:bcrypt", "dep:totp-rs", "dep:webauthn-rs", "dep:sha1", "dep:jsonwebtoken" ]
+database = [ "dep:tokio", "dep:async-trait", "dep:uuid", "dep:chrono", "dep:serde", "dep:serde_json", "dep:tracing", "dep:tracing-subscriber", "dep:axum", "dep:tower", "dep:tower-http", "dep:regex", "dep:http", "dep:sqlx", "dep:hmac", "dep:sha2", "dep:hex", "dep:bigdecimal", "dep:rust_decimal", "dep:stellar-strkey", "dep:ed25519-dalek", "dep:stellar-xdr", "dep:utoipa", "dep:utoipa-swagger-ui", "dep:argon2", "dep:rand", "dep:bcrypt", "dep:totp-rs", "dep:webauthn-rs", "dep:sha1", "dep:jsonwebtoken", "dep:openssl" ]
 cache = ["dep:redis", "dep:bb8", "dep:bb8-redis", "dep:moka", "dep:prometheus", "dep:tokio-util", "database"]
 
 # Distributed tracing via OpenTelemetry (Issue #104).
@@ -169,6 +169,9 @@ jsonwebtoken = { version = "9.3", optional = true }
 
 # RSA signing for OAuth 2.0 RS256 tokens
 rsa = { version = "0.9", features = ["sha2", "pem"], optional = true }
+
+# OpenSSL for mTLS certificate generation
+openssl = { version = "0.10", features = ["vendored"], optional = true }
 
 # MaxMind GeoIP2 for IP geolocation
 maxminddb = { version = "0.24", optional = true }
