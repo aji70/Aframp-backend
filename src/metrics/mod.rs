@@ -734,6 +734,7 @@ fn register_all(r: &Registry) {
     crate::ddos::metrics::register(r);
     crate::pentest::metrics::register(r);
     crate::masking::metrics::register(r);
+    crate::gateway::metrics::register(r);
 }
 
 // ---------------------------------------------------------------------------
