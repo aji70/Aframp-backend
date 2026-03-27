@@ -123,6 +123,14 @@ pub mod gateway;
 #[cfg(feature = "database")]
 pub mod analytics;
 
+// Abuse detection and automated response system
+#[cfg(feature = "database")]
+pub mod abuse_detection;
+
+// Audit logging system
+#[cfg(feature = "database")]
+pub mod audit;
+
 // Contract error enum for Soroban (only when not using database feature)
 #[cfg(not(feature = "database"))]
 #[contracterror]
