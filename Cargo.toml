@@ -245,6 +245,7 @@ sha2 = "0.10"
 hex = "0.4"
 tokio       = { version = "1.49.0", features = ["full"] }
 tokio-test  = "0.4"
+bigdecimal  = "0.4"
 
 [[test]]
 name = "payload_encryption_test"
@@ -255,3 +256,8 @@ required-features = ["database"]
 name = "key_management_test"
 path = "tests/key_management_test.rs"
 required-features = ["database"]
+
+[[test]]
+name = "security_compliance_integration"
+path = "tests/security_compliance_integration.rs"
+required-features = ["integration"]
