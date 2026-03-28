@@ -1,6 +1,7 @@
 mod api;
 mod api_keys;
 mod audit;
+mod auditor_portal;
 mod auth;
 mod cache;
 mod chains;
@@ -1400,6 +1401,25 @@ async fn main() -> anyhow::Result<()> {
     } else {
         Router::new()
     };
+
+    // ── External Auditor Portal ───────────────────────────────────────────────
+    let auditor_portal_routes = if let Some(ref pool) = db_pool {
+        let audit_repo = std::sync::Arc::new(audit::repository::AuditLogRepository::new(pool.clone()));
+        let auditor_repo = std::sync::Arc::new(auditor_portal::repository::AuditorRepository::new(pool.clone()));
+        let auditor_service = std::sync::Arc::new(auditor_portal::service::AuditorService::new(
+            auditor_repo,
+            audit_repo,
+        ));
+        let state = std::sync::Arc::new(auditor_portal::handlers::AuditorPortalState {
+            service: auditor_service,
+        });
+        info!("🔍 External auditor portal routes enabled");
+        auditor_portal::routes::auditor_routes(state.clone())
+            .merge(auditor_portal::routes::admin_auditor_routes(state))
+    } else {
+        info!("⏭️  Skipping auditor portal routes (no database)");
+        Router::new()
+    };
     let (ddos_state, ddos_admin_routes) = if let Some(ref cache) = redis_cache {
         let ddos_config = ddos::config::DdosConfig::from_env();
         let state = std::sync::Arc::new(ddos::state::DdosState::new(ddos_config, cache.clone()));
@@ -1606,6 +1626,7 @@ async fn main() -> anyhow::Result<()> {
         .merge(batch_routes)
         .merge(admin_routes)
         .merge(audit_routes)
+        .merge(auditor_portal_routes)
         .merge(key_rotation_routes)
         .merge(openapi_routes)
         .merge(recurring_routes)
