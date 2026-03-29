@@ -1569,6 +1569,26 @@ async fn main() -> anyhow::Result<()> {
     } else {
         Router::new()
     };
+
+    // ── Mint request routes (Issue #220) ─────────────────────────────────────
+    let mint_routes = if let (Some(ref pool), Some(ref stellar)) = (&db_pool, &stellar_client) {
+        let repo = std::sync::Arc::new(api::mint::repository::MintRepository::new(pool.clone()));
+        let trustline_mgr = std::sync::Arc::new(
+            crate::chains::stellar::trustline::CngnTrustlineManager::new(stellar.clone())
+        );
+        let validator = std::sync::Arc::new(api::mint::validator::MintValidator {
+            repo: repo.clone(),
+            trustline_mgr,
+            pool: pool.clone(),
+        });
+        let state = std::sync::Arc::new(api::mint::MintState { repo, validator });
+        Router::new()
+            .route("/api/mint/requests", post(api::mint::submit_mint_request))
+            .route("/api/mint/requests/:id", get(api::mint::get_mint_request))
+            .with_state(state)
+    } else {
+        Router::new()
+    };
     let (ddos_state, ddos_admin_routes) = if let Some(ref cache) = redis_cache {
         let ddos_config = ddos::config::DdosConfig::from_env();
         let state = std::sync::Arc::new(ddos::state::DdosState::new(ddos_config, cache.clone()));
@@ -1813,6 +1833,7 @@ async fn main() -> anyhow::Result<()> {
         .merge(admin_routes)
         .merge(adaptive_rl_admin_routes)
         .merge(audit_routes)
+        .merge(mint_routes)
         .merge(key_rotation_routes)
         .merge(analytics_routes)
         .merge(openapi_routes)
