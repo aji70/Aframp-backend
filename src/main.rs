@@ -2,6 +2,7 @@ mod api;
 mod api_keys;
 mod audit;
 mod auth;
+mod verification;
 mod cache;
 mod chains;
 mod config;
@@ -407,6 +408,21 @@ async fn main() -> anyhow::Result<()> {
         Some(writer)
     } else {
         info!("⏭️  Skipping audit writer (no database/redis)");
+        None
+    };
+
+    // ── Collateral Verification Engine (Issue #217) ───────────────────────────
+    let verification_engine = if let (Some(ref pool), Some(ref stellar)) = (&db_pool, &stellar_client) {
+        let engine = std::sync::Arc::new(verification::engine::VerificationEngine::new(
+            std::sync::Arc::new(stellar.clone()),
+            pool.clone(),
+        ));
+        let worker = verification::worker::VerificationWorker::new(engine.clone());
+        tokio::spawn(worker.run(worker_shutdown_rx.clone()));
+        info!("✅ Collateral verification engine started");
+        Some(engine)
+    } else {
+        info!("⏭️  Skipping verification engine (no database/stellar)");
         None
     };
 
@@ -1305,6 +1321,21 @@ async fn main() -> anyhow::Result<()> {
     } else {
         Router::new()
     };
+
+    // ── Collateral verification routes (Issue #217) ───────────────────────────
+    let verification_routes = if let (Some(ref pool), Some(ref engine)) = (&db_pool, &verification_engine) {
+        let state = std::sync::Arc::new(verification::handler::VerificationState {
+            engine: engine.clone(),
+            repo: std::sync::Arc::new(verification::repository::VerificationRepository::new(pool.clone())),
+        });
+        Router::new()
+            .route("/api/internal/verification/latest",  get(verification::handler::get_latest))
+            .route("/api/internal/verification/history", get(verification::handler::get_history))
+            .route("/api/internal/verification/trigger", post(verification::handler::trigger_verification))
+            .with_state(state)
+    } else {
+        Router::new()
+    };
     let (ddos_state, ddos_admin_routes) = if let Some(ref cache) = redis_cache {
         let ddos_config = ddos::config::DdosConfig::from_env();
         let state = std::sync::Arc::new(ddos::state::DdosState::new(ddos_config, cache.clone()));
@@ -1478,6 +1509,7 @@ async fn main() -> anyhow::Result<()> {
         .merge(batch_routes)
         .merge(admin_routes)
         .merge(audit_routes)
+        .merge(verification_routes)
         .merge(key_rotation_routes)
         .merge(openapi_routes)
         .merge(recurring_routes)
