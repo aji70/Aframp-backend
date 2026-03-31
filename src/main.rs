@@ -1771,6 +1771,7 @@ async fn main() -> anyhow::Result<()> {
         .merge(wallet_routes)
         .merge(rates_routes)
         .merge(fees_routes)
+        .merge(mint_routes)
         .merge(webhook_routes)
         .merge(history_routes)
         .merge(auth_routes)
@@ -2120,6 +2121,11 @@ async fn main() -> anyhow::Result<()> {
     if let Some(handle) = offramp_handle {
         if let Err(e) = tokio::time::timeout(std::time::Duration::from_secs(5), handle).await {
             error!(error = %e, "Timed out waiting for offramp worker shutdown");
+        }
+    }
+    if let Some(handle) = mint_expiry_handle {
+        if let Err(e) = tokio::time::timeout(std::time::Duration::from_secs(5), handle).await {
+            error!(error = %e, "Timed out waiting for mint expiry worker shutdown");
         }
     }
 
