@@ -8,7 +8,6 @@ mod auth;
 mod cache;
 mod chains;
 mod compliance_registry;
-mod corridors;
 mod config;
 mod config_validation;
 mod database;
