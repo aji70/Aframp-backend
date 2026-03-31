@@ -58,6 +58,10 @@ pub mod admin;
 #[cfg(feature = "database")]
 pub mod analytics;
 
+// LP Payout Engine — reward calculation and disbursement for Liquidity Providers
+#[cfg(feature = "database")]
+pub mod lp_payout;
+
 // Data classification framework — authoritative sensitivity taxonomy and
 // policy enforcement for every data field on the platform.
 #[cfg(feature = "database")]
@@ -115,6 +119,10 @@ pub mod key_management;
 #[cfg(feature = "database")]
 pub mod pentest;
 
+// Bug bounty programme & responsible disclosure
+#[cfg(feature = "database")]
+pub mod bug_bounty;
+
 // Data masking & redaction system
 #[cfg(feature = "database")]
 pub mod masking;
@@ -127,9 +135,9 @@ pub mod gateway;
 #[cfg(feature = "database")]
 pub mod vault;
 
-// Liquidity Monitor — Stellar DEX order-book depth & slippage surveillance
+// Treasury Emergency Intervention Framework — one-click peg stabilisation
 #[cfg(feature = "database")]
-pub mod liquidity_monitor;
+pub mod treasury;
 // Consumer usage analytics & reporting system
 #[cfg(feature = "database")]
 pub mod analytics;
@@ -150,6 +158,14 @@ pub mod service_auth;
 // Abuse detection and automated response system
 #[cfg(feature = "database")]
 pub mod abuse_detection;
+
+// Compliance Registry — license tracking, regulatory constraints, corridor governance (Issue #2.02)
+#[cfg(feature = "database")]
+pub mod compliance_registry;
+
+// Cross-border payment corridor implementations
+#[cfg(feature = "database")]
+pub mod corridors;
 
 // Audit logging system
 #[cfg(feature = "database")]
