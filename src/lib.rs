@@ -151,6 +151,10 @@ pub mod vault;
 // Treasury Emergency Intervention Framework — one-click peg stabilisation
 #[cfg(feature = "database")]
 pub mod treasury;
+
+// Multi-Signature Governance Framework — M-of-N signing for Mint/Burn/SetOptions
+#[cfg(feature = "database")]
+pub mod multisig;
 // Adaptive rate limiting and throttling system
 #[cfg(feature = "cache")]
 pub mod adaptive_rate_limit;
@@ -173,14 +177,22 @@ pub mod security;
 #[cfg(feature = "database")]
 pub mod compliance_registry;
 
+// LP Onboarding & Partner Portal — institutional liquidity provider onboarding,
+// agreement lifecycle, Stellar key allowlisting
+#[cfg(feature = "database")]
+pub mod lp_onboarding;
+
 // Cross-border payment corridor implementations
 #[cfg(feature = "database")]
 pub mod corridors;
 
-// DEX Market Maker — cNGN spread strategy engine, laddered liquidity,
-// dynamic re-quoting, inventory management, and circuit breaker (#1.06)
+// POS QR Payment System — Physical retail integration
 #[cfg(feature = "database")]
-pub mod dex_market_maker;
+pub mod pos;
+
+// Merchant Gateway — Commercial adoption entry point for businesses
+#[cfg(feature = "database")]
+pub mod merchant_gateway;
 
 // Contract error enum for Soroban (only when not using database feature)
 #[cfg(not(feature = "database"))]
