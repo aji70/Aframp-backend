@@ -177,6 +177,11 @@ pub mod compliance_registry;
 #[cfg(feature = "database")]
 pub mod corridors;
 
+// DEX Market Maker — cNGN spread strategy engine, laddered liquidity,
+// dynamic re-quoting, inventory management, and circuit breaker (#1.06)
+#[cfg(feature = "database")]
+pub mod dex_market_maker;
+
 // Contract error enum for Soroban (only when not using database feature)
 #[cfg(not(feature = "database"))]
 #[contracterror]
