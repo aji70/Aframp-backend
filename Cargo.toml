@@ -127,7 +127,6 @@ prometheus = { version = "0.13", features = ["process"], optional = true }
 
 # PDF & Reporting
 typst = "0.11"
-qrcode = "0.14"
 chrono-tz = "0.9"
 
 # Additional crypto dependencies for admin auth
@@ -296,6 +295,13 @@ required-features = ["database"]
 name = "wallet_integration_tests"
 path = "tests/wallet_integration_tests.rs"
 required-features = ["integration"]
+
+[[test]]
 name = "multisig_governance_test"
 path = "tests/multisig_governance_test.rs"
+required-features = ["database"]
+
+[[test]]
+name = "dispute_resolution_tests"
+path = "tests/dispute_resolution_tests.rs"
 required-features = ["database"]
