@@ -177,6 +177,22 @@ pub mod compliance_registry;
 #[cfg(feature = "database")]
 pub mod corridors;
 
+// Issue #334 — Merchant CRM & Customer Insights
+#[cfg(feature = "database")]
+pub mod merchant_crm;
+
+// Issue #333 — Merchant Invoicing & Automated Tax Calculation
+#[cfg(feature = "database")]
+pub mod merchant_invoicing;
+
+// Issue #335 — Multi-Store & Franchise Management
+#[cfg(feature = "database")]
+pub mod franchise;
+
+// Issue #322 — Wallet Creation & Stellar Account Provisioning
+#[cfg(feature = "database")]
+pub mod wallet_provisioning;
+
 // Contract error enum for Soroban (only when not using database feature)
 #[cfg(not(feature = "database"))]
 #[contracterror]
