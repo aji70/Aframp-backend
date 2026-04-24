@@ -152,6 +152,10 @@ pub mod vault;
 #[cfg(feature = "database")]
 pub mod treasury;
 
+// In-House CFO — Autonomous Agent Treasury Management
+#[cfg(feature = "database")]
+pub mod agent_cfo;
+
 // Multi-Signature Governance Framework — M-of-N signing for Mint/Burn/SetOptions
 #[cfg(feature = "database")]
 pub mod multisig;
