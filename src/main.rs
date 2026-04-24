@@ -46,6 +46,7 @@ mod franchise;
 // Issue #322 — Wallet Creation & Stellar Account Provisioning
 mod wallet_provisioning;
 mod oracle;
+mod agent_cfo;
 
 // Imports
 use std::sync::Arc;
@@ -2209,6 +2210,28 @@ async fn main() -> anyhow::Result<()> {
         info!("⏭️  Skipping POS routes (missing database or stellar client)");
         Router::new()
     };
+    // ── Agent CFO — In-House Treasury for Autonomous Agents ─────────────────
+    let agent_cfo_routes = if let Some(pool) = db_pool.clone() {
+        let engine = std::sync::Arc::new(agent_cfo::engine::AgentCfoEngine::new(pool.clone()));
+        let ledger = engine.ledger();
+        let cfo_state = agent_cfo::handlers::CfoState {
+            engine,
+            ledger,
+            db: pool.clone(),
+        };
+        // Start burn-rate watchdog
+        let watchdog = agent_cfo::watchdog::BurnRateWatchdog::new(
+            pool,
+            agent_cfo::watchdog::WatchdogConfig::from_env(),
+        );
+        tokio::spawn(watchdog.run(worker_shutdown_rx.clone()));
+        info!("✅ Agent CFO watchdog started");
+        agent_cfo::routes::agent_cfo_routes(cfo_state)
+    } else {
+        info!("⏭️  Skipping Agent CFO routes (no database)");
+        Router::new()
+    };
+
     let app = Router::new()
         .route("/", get(root))
         .route("/health", get(health))
@@ -2216,30 +2239,15 @@ async fn main() -> anyhow::Result<()> {
         .route("/health/live", get(liveness))
         .route("/metrics", get(metrics::handler::metrics_handler))
         .route("/api/stellar/account/{address}", get(get_stellar_account))
-        .route(
-            "/api/trustlines/operations",
-            post(create_trustline_operation),
-        )
-        .route(
-            "/api/trustlines/operations/{id}",
-            patch(update_trustline_operation_status),
-        )
-        .route(
-            "/api/trustlines/operations/wallet/{address}",
-            get(list_trustline_operations_by_wallet),
-        )
+        .route("/api/trustlines/operations", post(create_trustline_operation))
+        .route("/api/trustlines/operations/{id}", patch(update_trustline_operation_status))
+        .route("/api/trustlines/operations/wallet/{address}", get(list_trustline_operations_by_wallet))
         .route("/api/fees/calculate", post(calculate_fee))
         .route("/api/cngn/trustlines/check", post(check_cngn_trustline))
-        .route(
-            "/api/cngn/trustlines/preflight",
-            post(preflight_cngn_trustline),
-        )
+        .route("/api/cngn/trustlines/preflight", post(preflight_cngn_trustline))
         .route("/api/cngn/trustlines/build", post(build_cngn_trustline))
         .route("/api/cngn/trustlines/submit", post(submit_cngn_trustline))
-        .route(
-            "/api/cngn/trustlines/retry/{id}",
-            post(retry_cngn_trustline),
-        )
+        .route("/api/cngn/trustlines/retry/{id}", post(retry_cngn_trustline))
         .route("/api/cngn/payments/build", post(build_cngn_payment))
         .route("/api/cngn/payments/sign", post(sign_cngn_payment))
         .route("/api/cngn/payments/submit", post(submit_cngn_payment))
@@ -2247,6 +2255,7 @@ async fn main() -> anyhow::Result<()> {
         .merge(onramp_routes)
         .merge(offramp_routes)
         .merge(wallet_routes)
+        .merge(noncustodial_wallet_routes)
         .merge(rates_routes)
         .merge(fees_routes)
         .merge(mint_routes)
@@ -2278,6 +2287,8 @@ async fn main() -> anyhow::Result<()> {
         .merge(oracle_routes)
         .merge(governance_routes)
         .merge(lp_onboarding_routes)
+        .merge(agent_cfo_routes)
+        .merge(pos_routes)
         .with_state(AppState {
             db_pool,
             redis_cache,
