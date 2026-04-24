@@ -10,3 +10,4 @@ pub mod transform;
 
 // Stellar Oxide Gateway v2.0 — Rust-native rewrite (Issue #344)
 pub mod v2;
+pub mod region;
